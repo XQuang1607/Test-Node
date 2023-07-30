@@ -28,6 +28,8 @@ router.use('/products', productsRouter);
 // router.use('/customers', passport.authenticate('jwtAdmin', { session: false }), customersRouter);
 // router.use('/products', passport.authenticate('jwtAdmin', { session: false }), productsRouter);
 
-router.use('/orders', passport.authenticate('jwtAdmin', { session: false }), ordersRouter);
+router.use('/orders',
+    // passport.authenticate('jwtAdmin', { session: false }), 
+    ordersRouter);
 
 module.exports = router;

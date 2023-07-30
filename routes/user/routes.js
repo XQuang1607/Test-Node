@@ -23,6 +23,8 @@ router.use('/categories', categoriesRouter);
 router.use('/customers', customersRouter);
 router.use('/products', productsRouter);
 router.use('/orders', passport.authenticate('jwtUser', { session: false }), ordersRouter);
-router.use('/cart', passport.authenticate('jwtUser', { session: false }), cartRouter);
+router.use('/cart',
+    passport.authenticate('jwtUser', { session: false }),
+    cartRouter);
 
 module.exports = router;

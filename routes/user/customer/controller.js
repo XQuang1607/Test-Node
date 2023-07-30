@@ -153,6 +153,7 @@ module.exports = {
 
             const { email, phoneNumber, address } = data;
 
+
             const getEmailExits = Customer.find({ email });
             const getPhoneExits = Customer.find({ phoneNumber });
             const getAddressExits = Customer.find({ address });
@@ -181,7 +182,7 @@ module.exports = {
 
             let result = await newItem.save();
 
-            return res.send({ code: 200, message: 'Tạo thành công', payload: result });
+            return res.send({ code: 200, message: 'Tạo thành công', payload: result, });
         } catch (err) {
             console.log('««««« err »»»»»', err);
             return res.status(500).json({ code: 500, error: err });

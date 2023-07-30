@@ -54,7 +54,9 @@ const {
     question34,
     hotsale,
     flashsale,
-    categorylimit
+    categorylimit,
+    productsofcateogory,
+    productsofcategoryshop,
 } = require('./controller');
 
 router.get('/1', question1);
@@ -105,6 +107,8 @@ router.get('/34', question34);
 router.get('/hotsale', hotsale);
 router.get('/flashsale', flashsale);
 router.get('/categorylimit', categorylimit);
+router.get('/productsofcateogory', productsofcateogory);
+router.get('/productsofcategoryshop', productsofcategoryshop);
 
 
 module.exports = router;

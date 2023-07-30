@@ -16,7 +16,7 @@ const customerSchema = Schema({
     },
     gender: {
         type: String,
-        required: true,
+        // required: true,
         enum: ['Male', 'Female', 'Other'],
     },
     phoneNumber: {

@@ -13,6 +13,49 @@ module.exports = {
         }
     },
 
+    getProductList: async(req, res, next) => {
+        try {
+            const { limit = 9, page, categoryId, priceStart, priceEnd } = req.query;
+
+            const skip = +page || 1; // 3
+
+            const conditionFind = {}; // giới tính = nữ
+
+            if (categoryId) {
+                conditionFind.categoryId = categoryId;
+            };
+
+            if (priceStart && priceEnd) {
+                const compareStart = { $lte: ['$price', priceEnd] };
+                const compareEnd = { $gte: ['$price', priceStart] };
+                conditionFind.$expr = { $and: [compareStart, compareEnd] };
+            } else if (priceStart) {
+                conditionFind.price = { $gte: parseFloat(priceStart) };
+            } else if (priceEnd) {
+                conditionFind.price = { $lte: parseFloat(priceEnd) };
+            }
+
+            const conditionSort = {
+                createdAt: -1
+            };
+
+            console.log('««««« conditionFind »»»»»', conditionFind);
+            const results = await Product.find(conditionFind)
+                .populate('category')
+                // .populate('supplier')
+                .sort(conditionSort)
+                .skip(limit * (skip - 1))
+                .limit(limit * 1)
+
+            const total = await Product
+                .countDocuments(conditionFind)
+
+            return res.send({ code: 200, total, payload: results });
+        } catch (err) {
+            return res.status(500).json({ code: 500, error: err });
+        }
+    },
+
     getProductDetail: async(req, res, next) => {
         try {
             const { id } = req.params;

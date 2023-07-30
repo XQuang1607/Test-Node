@@ -4,10 +4,14 @@ const { asyncForEach } = require('../../../utils');
 module.exports = {
     getDetail: async(req, res, next) => {
         try {
-            // const { id } = req.user;
+            // const { _id } = req.user;
+            // const { _id } = req.params;
+            const { id } = req.params;
 
             // let found = await Cart.findOne({ customerId: id });
-            let found = await Cart.findOne({ customerId: req.user });
+            // let found = await Cart.findOne({ customerId: _id }.populate("products.productId"));
+            let found = await Cart.findOne({ customerId: id })
+                .populate("products.productId");
 
             if (found) {
                 return res.send({ code: 200, payload: found });
@@ -204,7 +208,7 @@ module.exports = {
 
     remove: async function(req, res, next) {
         try {
-            const { productId } = req.body;
+            const { productId, customerId } = req.body;
 
             let cart = await Cart.findOne({ customerId });
 
@@ -218,9 +222,12 @@ module.exports = {
             if (cart.products.length === 1 && cart.products[0].productId === productId) {
                 await Cart.deleteOne({ _id: cart._id });
             } else {
-                await Cart.findOneAndUpdate(cart._id, {
-                    customerId,
-                    products: cart.product.filter((item) => item.productId !== productId),
+                // await Cart.findOneAndUpdate(cart._id, {
+                //     customerId,
+                //     products: cart.product.filter((item) => item.productId !== productId),
+                // });
+                await cart.updateOne({
+                    $pull: { products: { productId: productId } }
                 });
             }
 

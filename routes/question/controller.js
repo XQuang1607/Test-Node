@@ -7,6 +7,7 @@ const {
     Customer,
     Order,
     Employee,
+    Cart,
 } = require('../../models');
 
 module.exports = {
@@ -888,8 +889,8 @@ module.exports = {
     question17: async(req, res, next) => {
         try {
             let results = await Product.find({}) // ~ match
-                .populate({ path: 'category', select: '-createdAt -updatedAt' })
-                .populate({ path: 'supplier', select: '-createdAt -updatedAt' })
+                // .populate({ path: 'category', select: '-createdAt -updatedAt' })
+                // .populate({ path: 'supplier', select: '-createdAt -updatedAt' })
                 // .populate({
                 //     path: 'orderDetails.product',
                 //     select: { name: 1, stock: 1 },
@@ -1913,7 +1914,6 @@ module.exports = {
     },
 
 
-
     categorylimit: async(req, res, next) => {
         try {
 
@@ -1944,7 +1944,7 @@ module.exports = {
 
             let results = await Product.find(conditionFind)
                 .sort({ discount: -1 })
-                .limit(10);
+                .limit(8);
             console.log('««««« results »»»»»', results);
             let total = await Product.countDocuments();
 
@@ -1961,6 +1961,7 @@ module.exports = {
 
     hotsale: async(req, res, next) => {
         try {
+
             let results = await Order.aggregate()
 
             .match({
@@ -1975,6 +1976,18 @@ module.exports = {
                     as: 'orderDetails.product',
                 })
                 .unwind('orderDetails.product')
+                .addFields({
+                    discountedPrice: {
+                        $divide: [{
+                                $multiply: [
+                                    '$orderDetails.product.price',
+                                    { $subtract: [100, '$orderDetails.product.discount'] },
+                                ],
+                            },
+                            100,
+                        ],
+                    },
+                })
 
             .group({
                     _id: '$orderDetails.productId',
@@ -1982,6 +1995,8 @@ module.exports = {
                     price: { $first: '$orderDetails.product.price' },
                     discount: { $first: '$orderDetails.product.discount' },
                     stock: { $first: '$orderDetails.product.stock' },
+                    cover: { $first: '$orderDetails.product.cover' },
+                    discountedPrice: { $first: '$discountedPrice' },
                     totalProductSale: {
                         $sum: '$orderDetails.quantity',
                     },
@@ -1991,7 +2006,7 @@ module.exports = {
                 .sort({
                     totalProductSale: -1,
                 })
-                .limit(10)
+                .limit(8)
 
 
             let total = await Order.countDocuments();
@@ -2007,110 +2022,142 @@ module.exports = {
             return res.status(500).json({ code: 500, error: err });
         }
     },
+    // số lượng sản phẩm trong từng thư mục trang index
+    productsofcateogory: async(req, res, next) => {
+        try {
+            let results = await Category.aggregate()
+                // .lookup({ // so sánh
+                //   from: 'customers',
+                //   localField: 'customerId',
+                //   foreignField: '_id',
+                //   as: 'customer'
+                // })
+
+            .lookup({
+                from: 'products',
+                localField: '_id', // TRUY VẤN NGƯỢC!!!
+                foreignField: 'categoryId',
+                as: 'products',
+            })
+
+            // .unwind('products') //   sẽ dẫn dến thiếu dự liệu'
+
+            .unwind({
+                path: '$products',
+                preserveNullAndEmptyArrays: true,
+
+            })
+
+            .group({
+                _id: '$_id',
+                name: { $first: '$name' },
+                description: { $first: '$description' },
+                cover: { $first: '$cover' },
+                totalProduct: {
+                    // $sum: '$products.stock',
+                    $sum: 1,
+                },
+            })
+
+            .sort({
+                    totalProduct: -1,
+                    name: 1,
+                })
+                .limit(6)
 
 
+            let total = await Category.countDocuments();
 
-    // question30: async(req, res, next) => {
-    //     try {
-    //         let results = await Product.aggregate()
-    //             .lookup({
-    //                 from: 'products',
-    //                 localField: '_id',
-    //                 foreignField: 'categoryId',
-    //                 as: 'products'
-    //             })
-    //             .unwind({
-    //                 path: '$products',
-    //                 preserveNullAndEmptyArrays: true,
-    //             })
-    //             .lookup({
-    //                 from: 'orders',
-    //                 localField: 'products._id',
-    //                 foreignField: 'orderDetails.productId',
-    //                 as: 'orders'
-    //             })
-    //             .unwind({
-    //                 path: '$orders',
-    //                 preserveNullAndEmptyArrays: true,
-    //             })
-    //             .unwind({
-    //                 path: '$orders.orderDetails',
-    //                 preserveNullAndEmptyArrays: true,
-    //             })
-    //             .addFields({
-    //                 originalPrice: {
-    //                     $divide: [{
-    //                             $multiply: [
-    //                                 '$orders.orderDetails.price',
-    //                                 { $subtract: [100, '$orders.orderDetails.discount'] },
-    //                             ],
-    //                         },
-    //                         100,
-    //                     ],
-    //                 },
-    //                 amount: '$orders.orderDetails.quantity',
-    //             })
-    //             .group({
-    //                 _id: '$_id',
-    //                 name: { $first: '$name' },
-    //                 description: { $first: '$description' },
-    //                 total: {
-    //                     $sum: { $multiply: ['$originalPrice', '$amount'] },
-    //                 },
-    //             })
+            return res.send({
+                code: 200,
+                total,
+                totalResult: results.length,
+                payload: results,
+            });
+        } catch (err) {
+            console.log('««««« err »»»»»', err);
+            return res.status(500).json({ code: 500, error: err });
+        }
+    },
+    // số lượng sản phẩm trong từng thư mục trang shop
+    productsofcategoryshop: async(req, res, next) => {
+        try {
+            let results = await Category.aggregate()
+                // .lookup({ // so sánh
+                //   from: 'customers',
+                //   localField: 'customerId',
+                //   foreignField: '_id',
+                //   as: 'customer'
+                // })
 
-    //         let total = await Order.countDocuments();
+            .lookup({
+                from: 'products',
+                localField: '_id', // TRUY VẤN NGƯỢC!!!
+                foreignField: 'categoryId',
+                as: 'products',
+            })
 
-    //         return res.send({
-    //             code: 200,
-    //             total,
-    //             totalResult: results.length,
-    //             payload: results,
-    //         });
-    //     } catch (err) {
-    //         console.log('««««« err »»»»»', err);
-    //         return res.status(500).json({ code: 500, error: err });
-    //     }
-    // },
+            // .unwind('products') //   sẽ dẫn dến thiếu dự liệu'
 
-    // question20: async(req, res, next) => {
-    //     try {
-    //         let { fromDate, toDate } = req.query;
-    //         const conditionFind = getQueryDateTime(fromDate, toDate);
+            .unwind({
+                path: '$products',
+                preserveNullAndEmptyArrays: true,
 
-    //         let results = await Order.aggregate()
-    //             .match({
-    //                 ...conditionFind,
-    //                 status: { $in: ['COMPLETED'] },
-    //             })
-    //             .unwind('orderDetails')
-    //             .lookup({
-    //                 from: 'products',
-    //                 localField: 'orderDetails.productId',
-    //                 foreignField: '_id',
-    //                 as: 'orderDetails.product',
-    //             })
-    //             .unwind('orderDetails.product')
-    //             .group({
-    //                 _id: '$orderDetails.productId',
-    //                 name: { $first: '$orderDetails.product.name' },
-    //                 price: { $first: '$orderDetails.product.price' },
-    //                 discount: { $first: '$orderDetails.product.discount' },
-    //                 stock: { $first: '$orderDetails.product.stock' },
-    //                 count: { $sum: 1 },
-    //             });
+            })
 
-    //         let total = await Order.countDocuments();
 
-    //         return res.send({
-    //             code: 200,
-    //             total,
-    //             totalResult: results.length,
-    //             payload: results,
-    //         });
-    //     } catch (err) {
-    //         console.log('««««« err »»»»»', err);
-    //         return res.status(500).json({ code: 500, error: err });
-    //     }
-    // },
+            .group({
+                _id: '$_id',
+                name: { $first: '$name' },
+                description: { $first: '$description' },
+                cover: { $first: '$cover' },
+                products: { $push: '$products' },
+                totalProduct: {
+                    // $sum: '$products.stock',
+                    $sum: 1,
+                },
+            })
+
+            // .group({
+            //     _id: '$_id',
+            //     name: { $first: '$name' },
+            //     description: { $first: '$description' },
+            //     cover: { $first: '$cover' },
+            //     products: { $first: '$products._id' },
+            //     products: { $first: '$products.name' },
+            //     totalProduct: {
+            //         $sum: {
+            //             $cond: [
+            //                 { $gt: ['$products', null] }, // Check if product exists (after unwind)
+            //                 1,
+            //                 0,
+            //             ],
+            //         },
+            //     },
+            //     // products: {
+            //     //     $push: '$products.productName', // Gather the product names in an array
+            //     // },
+            // })
+
+            .sort({
+                    totalProduct: -1,
+                    name: 1,
+                })
+                // .limit(10)
+
+
+            let total = await Category.countDocuments();
+
+            return res.send({
+                code: 200,
+                total,
+                totalResult: results.length,
+                payload: results,
+            });
+        } catch (err) {
+            console.log('««««« err »»»»»', err);
+            return res.status(500).json({ code: 500, error: err });
+        }
+    },
+
 };

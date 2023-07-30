@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
 const categorySchema = new Schema({
+    cover: {
+        type: String,
+    },
     name: {
         type: String,
         required: [true, 'Tên danh mục không được bỏ trống'],

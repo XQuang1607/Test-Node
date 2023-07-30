@@ -20,7 +20,8 @@ const {
 } = require("./controller");
 
 router.route("/register").post(validateSchema(createSchema),
-    passport.authenticate("jwtUser", { session: false }), create);
+    // passport.authenticate("jwtUser", { session: false }), 
+    create);
 
 router.route("/login").post(validateSchema(loginSchema),
     // passport.authenticate("jwtUser", { session: false }), 
