@@ -29,7 +29,7 @@ router.route("/login").post(validateSchema(loginSchema),
 
 router
     .route("/profile")
-    .get(passport.authenticate("jwtUser", { session: false }), getMe)
+    // .get(passport.authenticate("jwtUser", { session: false }), getMe)
     .patch(
         validateSchema(editSchema),
         passport.authenticate("jwtUser", { session: false }),

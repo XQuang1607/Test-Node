@@ -209,6 +209,7 @@ module.exports = {
     remove: async function(req, res, next) {
         try {
             const { productId, customerId } = req.body;
+            // const { productId } = req.body;
 
             let cart = await Cart.findOne({ customerId });
 

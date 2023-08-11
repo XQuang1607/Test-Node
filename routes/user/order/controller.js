@@ -62,7 +62,8 @@ module.exports = {
 
             // let results = await Order.find();
             let results = await Order.find({ customerId: req.user })
-                .select('-employeeId ');
+                .select('-employeeId ')
+                .populate("orderDetails.productId");;
 
             return res.send({ code: 200, payload: results });
         } catch (err) {
@@ -89,6 +90,74 @@ module.exports = {
         }
     },
 
+    // create: async function(req, res, next) {
+    //     try {
+    //         const data = req.body;
+
+    //         const { customerId, orderDetails } = data;
+
+    //         const getCustomer = Customer.findById(customerId);
+
+    //         const [customer] = await Promise.all([
+    //             getCustomer,
+    //             // getEmployee,
+    //         ]);
+
+    //         const errors = [];
+    //         if (!customer || customer.isDelete)
+    //             errors.push('Khách hàng không tồn tại');
+
+    //         await asyncForEach(orderDetails, async(item) => {
+    //             const product = await Product.findById(item.productId);
+
+    //             if (!product)
+    //                 errors.push(`Sản phẩm ${item.productId} không có trong hệ thống`);
+    //         });
+
+
+    //         if (errors.length > 0) {
+    //             return res.status(404).json({
+    //                 code: 404,
+    //                 message: 'Lỗi',
+    //                 errors,
+    //             });
+    //         }
+
+    //         const newItem = new Order(data);
+
+    //         let result = await newItem.save();
+
+    //         // //Xử lí xóa ở đây
+    //         // await asyncForEach(orderDetails, async(item) => {
+    //         //     const product = await Product.findById(item.productId);
+
+    //         //     //     if (!product)
+    //         //     //         errors.push(`Sản phẩm ${item.productId} không có trong hệ thống`);
+    //         //     // });
+    //         //     if (!product) {
+    //         //         errors.push(`Sản phẩm ${item.productId} không có trong hệ thống`);
+    //         //     } else {
+    //         //         // Kiểm tra và giảm số lượng sản phẩm trong kho
+    //         //         if (product.quantity < item.quantity) {
+    //         //             errors.push(`Sản phẩm ${item.productId} không đủ số lượng trong kho`);
+    //         //         } else {
+    //         //             product.quantity -= item.quantity;
+    //         //             await product.save();
+    //         //         }
+    //         //     }
+    //         // });
+
+
+    //         return res.send({
+    //             code: 200,
+    //             message: 'Tạo thành công',
+    //             payload: result,
+    //         });
+    //     } catch (err) {
+    //         console.log('««««« err »»»»»', err);
+    //         return res.status(500).json({ code: 500, error: err });
+    //     }
+    // },
     create: async function(req, res, next) {
         try {
             const data = req.body;
@@ -96,6 +165,7 @@ module.exports = {
             const { customerId, orderDetails } = data;
 
             const getCustomer = Customer.findById(customerId);
+            // const getEmployee = Employee.findById(employeeId);
 
             const [customer] = await Promise.all([
                 getCustomer,
@@ -105,6 +175,8 @@ module.exports = {
             const errors = [];
             if (!customer || customer.isDelete)
                 errors.push('Khách hàng không tồn tại');
+            // if (!employee || employee.isDelete)
+            //   errors.push('Nhân viên không tồn tại');
 
             await asyncForEach(orderDetails, async(item) => {
                 const product = await Product.findById(item.productId);
@@ -112,7 +184,6 @@ module.exports = {
                 if (!product)
                     errors.push(`Sản phẩm ${item.productId} không có trong hệ thống`);
             });
-
 
             if (errors.length > 0) {
                 return res.status(404).json({
@@ -126,26 +197,10 @@ module.exports = {
 
             let result = await newItem.save();
 
-            //Xử lí xóa ở đây
-            await asyncForEach(orderDetails, async(item) => {
-                const product = await Product.findById(item.productId);
+            // const productsId = result.orderDetails.map((i) => ({id: i.productId, quantity: i.quantity }))
 
-                //     if (!product)
-                //         errors.push(`Sản phẩm ${item.productId} không có trong hệ thống`);
-                // });
-                if (!product) {
-                    errors.push(`Sản phẩm ${item.productId} không có trong hệ thống`);
-                } else {
-                    // Kiểm tra và giảm số lượng sản phẩm trong kho
-                    if (product.quantity < item.quantity) {
-                        errors.push(`Sản phẩm ${item.productId} không đủ số lượng trong kho`);
-                    } else {
-                        product.quantity -= item.quantity;
-                        await product.save();
-                    }
-                }
-            });
-
+            // Xử lý giảm số sản phẩm tương ứng trong kho
+            // updateMany
 
             return res.send({
                 code: 200,
@@ -157,7 +212,6 @@ module.exports = {
             return res.status(500).json({ code: 500, error: err });
         }
     },
-
     remove: async function(req, res, next) {
         try {
 

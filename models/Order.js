@@ -89,6 +89,23 @@ const orderSchema = new Schema({
         // },
     },
 
+    // description: {
+    //     type: String,
+    //     // required: true,
+
+    // },
+    // discount: {
+    //     type: Number,
+    //     required: true,
+
+    // },
+
+    shippingAddress: {
+        type: String,
+        required: true,
+        maxLength: [500, 'Địa chỉ nhà khách hàng không được vượt quá 500 ký tự'],
+    },
+
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     employeeId: { type: Schema.Types.ObjectId, ref: 'Employee' },
 
