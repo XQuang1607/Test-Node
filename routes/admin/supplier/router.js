@@ -46,17 +46,17 @@ router.route('/')
     )
     .post(
         validateSchema(createSchema),
-        passport.authenticate('jwtAdmin', { session: false }),
+        // passport.authenticate('jwtAdmin', { session: false }),
         create)
 
 router.route('/:id')
     .get(validateSchema(getDetailSchema), getDetail)
     .patch(
         validateSchema(editSchema),
-        passport.authenticate('jwtAdmin', { session: false }),
+        // passport.authenticate('jwtAdmin', { session: false }),
         update)
     .delete(
-        passport.authenticate('jwtAdmin', { session: false }), // CHECK TOKEN IS VALID
+        // passport.authenticate('jwtAdmin', { session: false }), // CHECK TOKEN IS VALID
         validateSchema(getDetailSchema), // CHECK PARAMS
         remove, // HANDLE DELETE
     )

@@ -19,18 +19,18 @@ const {
 router.route('/')
     .get(getAll)
     .post(validateSchema(createSchema),
-        passport.authenticate('jwtAdmin', { session: false }),
+        // passport.authenticate('jwtAdmin', { session: false }),
         create)
 
 router.route('/:id')
     .get(validateSchema(getDetailSchema),
-        passport.authenticate('jwtAdmin', { session: false }),
+        // passport.authenticate('jwtAdmin', { session: false }),
         getDetail)
     .patch(validateSchema(createSchema),
-        passport.authenticate('jwtAdmin', { session: false }),
+        // passport.authenticate('jwtAdmin', { session: false }),
         update)
     .delete(validateSchema(getDetailSchema),
-        passport.authenticate('jwtAdmin', { session: false }),
+        // passport.authenticate('jwtAdmin', { session: false }),
         remove)
 
 module.exports = router;

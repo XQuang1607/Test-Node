@@ -36,13 +36,18 @@ passport.use(passportConfigLocalAdmin);
 
 router.route('/')
     .get(getProductAll)
-    .post(validateSchema(createProductSchema), passport.authenticate('jwtAdmin', { session: false }),
+    .post(validateSchema(createProductSchema),
+        // passport.authenticate('jwtAdmin', { session: false }),
         createProduct)
 
 router.route('/:id')
     .get(validateSchema(getProductSchema), getProductDetail)
-    .patch(validateSchema(createProductSchema), passport.authenticate('jwtAdmin', { session: false }), updateProduct)
-    .delete(validateSchema(getProductSchema), passport.authenticate('jwtAdmin', { session: false }), deleteProduct)
+    .patch(validateSchema(createProductSchema),
+        // passport.authenticate('jwtAdmin', { session: false }), 
+        updateProduct)
+    .delete(validateSchema(getProductSchema),
+        // passport.authenticate('jwtAdmin', { session: false }),
+        deleteProduct)
 
 // GET ALL
 // router.get('/', getProductAll);

@@ -3,6 +3,8 @@ const JWT = require('jsonwebtoken');
 const { Customer } = require('../../../models');
 const { generateToken, generateRefreshToken } = require('../../../helpers/jwtHelper');
 const jwtSettings = require('../../../constants/jwtSetting');
+const bcrypt = require('bcryptjs');
+
 
 module.exports = {
     login: async(req, res, next) => {
@@ -75,36 +77,49 @@ module.exports = {
 
     changePass: async(req, res, next) => {
         try {
-            const { id } = req.user;
+            console.log('««««« 123 »»»»»');
+            const { id } = req.params;
             const { currentPassword, newPassword } = req.body;
 
-            if (!id || !currentPassword || !newPassword) {
-                return res.status(400).json({ error: 'Missing required fields' });
-            }
+            // Find the customer by ID
+            const customer = await Customer.findById(id);
+            console.log('««««« customer »»»»»', customer);
 
-            const customer = await Customer.findOne({ _id: id });
             if (!customer) {
-                return res.status(404).json({ error: 'Customer not found' });
+                return res.status(404).json({
+                    status: false,
+                    message: 'Customer not found',
+                });
             }
 
-            if (customer.password !== currentPassword) {
-                return res.status(401).json({ error: 'Invalid current password' });
+            // Check if the current password matches
+            const isMatch = await customer.isValidPass(currentPassword);
+            if (!isMatch) {
+                return res.status(401).json({
+                    status: false,
+                    message: 'Invalid current password',
+                });
             }
 
-            if (customer.password === newPassword) {
-                return res.status(400).json({ error: 'New password must be different from the current password' });
-            }
 
-            customer.password = newPassword;
+            // Generate a new salt and hash the new password
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+            console.log('««««« hashedPassword »»»»»', hashedPassword);
+            // Update the password and save the customer
+            customer.password = hashedPassword;
             await customer.save();
+            console.log('««««« customer.password  »»»»»', customer.password);
 
-
-            return res.status(200).json({ message: 'Password changed successfully' });
-
+            return res.status(200).json({
+                status: true,
+                message: 'Password changed successfully',
+            });
         } catch (err) {
-            res.status(400).json({
-                statusCode: 400,
-                message: 'Lỗii',
+            return res.status(500).json({
+                status: false,
+                error: err.message,
             });
         }
     },

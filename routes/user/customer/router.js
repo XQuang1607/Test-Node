@@ -19,17 +19,25 @@ const {
     changePass,
 } = require("./controller");
 
+const {
+    passportConfigUser,
+    passportConfigLocalUser,
+} = require('../../../middlewares/passportUser');
+
+passport.use(passportConfigUser);
+passport.use(passportConfigLocalUser);
+
 router.route("/register").post(validateSchema(createSchema),
     // passport.authenticate("jwtUser", { session: false }), 
     create);
 
 router.route("/login").post(validateSchema(loginSchema),
-    // passport.authenticate("jwtUser", { session: false }), 
+    passport.authenticate("localUser", { session: false }),
     login);
 
 router
     .route("/profile")
-    // .get(passport.authenticate("jwtUser", { session: false }), getMe)
+    .get(passport.authenticate("jwtUser", { session: false }), getMe)
     .patch(
         validateSchema(editSchema),
         passport.authenticate("jwtUser", { session: false }),
@@ -42,9 +50,11 @@ router
     // );
 
 
-// router
-//     .route("/changePass/:id")
-//     .get(passport.authenticate("jwtUser", { session: false }), changePass);
+router
+    .route("/:id/changePass")
+    .patch(
+        // passport.authenticate("jwtUser", { session: false }), 
+        changePass);
 
 // router
 //     .route("/change-pass")

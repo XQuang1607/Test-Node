@@ -41,23 +41,29 @@ router.route('/refresh-token')
     .post(checkRefreshToken)
 
 router.route('/profile') // Đối tượng cần kiểm tra là token có hợp lệ hay không
-    .get(passport.authenticate('jwtAdmin', { session: false }), getMe)
+    .get(
+        // passport.authenticate('jwtAdmin', { session: false }), 
+        getMe)
 
 router.route('/')
     .get(
-        passport.authenticate('jwtAdmin', { session: false }),
+        // passport.authenticate('jwtAdmin', { session: false }),
         // allowRoles('GET_ALL_EMPLOYEE'),
         getAll,
     )
     .post(
-        passport.authenticate('jwtAdmin', { session: false }),
+        // passport.authenticate('jwtAdmin', { session: false }),
         validateSchema(createSchema), create)
 
 router.route('/:id')
-    .get(validateSchema(getDetailSchema), passport.authenticate('jwtAdmin', { session: false }), getDetail)
-    .patch(validateSchema(editSchema), passport.authenticate('jwtAdmin', { session: false }), update)
+    .get(validateSchema(getDetailSchema),
+        // passport.authenticate('jwtAdmin', { session: false }),
+        getDetail)
+    .patch(validateSchema(editSchema),
+        //  passport.authenticate('jwtAdmin', { session: false }), 
+        update)
     .delete(
-        passport.authenticate('jwtAdmin', { session: false }), // CHECK TOKEN IS VALID
+        // passport.authenticate('jwtAdmin', { session: false }), // CHECK TOKEN IS VALID
         // allowRoles('DELETE_EMPLOYEE'), // CHECK USER HAS ROLE
         validateSchema(getDetailSchema), // CHECK PARAMS
         remove, // HANDLE DELETE
