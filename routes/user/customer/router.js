@@ -50,10 +50,15 @@ router
     // );
 
 
+// router
+//     .route("/:id/changePass")
+//     .patch(
+//         // passport.authenticate("jwtUser", { session: false }), 
+//         changePass);
 router
-    .route("/:id/changePass")
+    .route("/changePass")
     .patch(
-        // passport.authenticate("jwtUser", { session: false }), 
+        passport.authenticate("jwtUser", { session: false }),
         changePass);
 
 // router

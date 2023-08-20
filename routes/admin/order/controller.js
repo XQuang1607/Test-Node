@@ -16,7 +16,7 @@ module.exports = {
         try {
             const { id } = req.params;
 
-            let found = await Order.findById(id);
+            let found = await Order.findById(id).populate("customer").populate("orderDetails.product");
 
             if (found) {
                 return res.send({ code: 200, payload: found });

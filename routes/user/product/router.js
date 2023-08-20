@@ -10,6 +10,7 @@ const {
     getProductAll,
     getProductList, // thêm bộ lọc và tìm kiếm
     getProductDetail,
+    getProductByName
 } = require('./controller');
 
 router.route('/').get(getProductAll)

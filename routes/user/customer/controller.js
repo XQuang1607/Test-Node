@@ -78,12 +78,12 @@ module.exports = {
     changePass: async(req, res, next) => {
         try {
             console.log('««««« 123 »»»»»');
-            const { id } = req.params;
-            const { currentPassword, newPassword } = req.body;
+            const { currentPassword, newPassword, confirmPassword } = req.body;
 
             // Find the customer by ID
-            const customer = await Customer.findById(id);
+            const customer = await Customer.findById(req.user._id);
             console.log('««««« customer »»»»»', customer);
+            const token = generateToken(customer, jwtSettings.USER_SECRET);
 
             if (!customer) {
                 return res.status(404).json({
@@ -101,20 +101,23 @@ module.exports = {
                 });
             }
 
+            // Check if new password and confirm password match
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'New password and confirm password do not match',
+                });
+            }
 
-            // Generate a new salt and hash the new password
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(newPassword, salt);
+            customer.password = newPassword;
 
-            console.log('««««« hashedPassword »»»»»', hashedPassword);
-            // Update the password and save the customer
-            customer.password = hashedPassword;
             await customer.save();
-            console.log('««««« customer.password  »»»»»', customer.password);
+            console.log('««««« newPassword  »»»»»', newPassword);
 
             return res.status(200).json({
                 status: true,
                 message: 'Password changed successfully',
+                token,
             });
         } catch (err) {
             return res.status(500).json({

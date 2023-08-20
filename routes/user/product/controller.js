@@ -13,9 +13,28 @@ module.exports = {
         }
     },
 
+    getProductByName: async(req, res, next) => {
+        try {
+            const { keyword } = req.query;
+            let keywordDecode = ''
+            if (keyword) {
+                keywordDecode = decodeURIComponent(keyword)
+            }
+            console.log('««««« keywordDecode »»»»»', keywordDecode);
+            let results = await Product.find({ name: { "$regex": keywordDecode, "$options": "i" } })
+                .populate('category')
+                .populate('supplier');
+
+            return res.send({ code: 200, payload: results });
+        } catch (err) {
+            console.log('««««« err »»»»»', err);
+            return res.status(500).json({ code: 500, error: err });
+        }
+    },
+
     getProductList: async(req, res, next) => {
         try {
-            const { limit = 9, page, categoryId, priceStart, priceEnd } = req.query;
+            const { limit = 9, page, categoryId, priceStart, priceEnd, keyword } = req.query;
 
             const skip = +page || 1; // 3
 
@@ -24,6 +43,11 @@ module.exports = {
             if (categoryId) {
                 conditionFind.categoryId = categoryId;
             };
+
+            if (keyword) {
+                const keywordDecode = decodeURIComponent(keyword)
+                conditionFind.name = { $regex: keywordDecode, $options: "i" }
+            }
 
             if (priceStart && priceEnd) {
                 const compareStart = { $lte: ['$price', priceEnd] };
@@ -52,6 +76,7 @@ module.exports = {
 
             return res.send({ code: 200, total, payload: results });
         } catch (err) {
+            console.log('««««« err »»»»»', err);
             return res.status(500).json({ code: 500, error: err });
         }
     },
