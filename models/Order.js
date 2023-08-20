@@ -89,10 +89,10 @@ const orderSchema = new Schema({
         // },
     },
 
-    // description: {
-    //     type: String,
-    //     // required: true,
-
+    description: {
+        type: String,
+        // required: true,
+    },
     // },
     // discount: {
     //     type: Number,

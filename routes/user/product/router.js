@@ -15,7 +15,8 @@ const {
 
 router.route('/').get(getProductAll)
 
-router.route('/search').get(validateSchema(getProductsSchema), getProductList)
+// router.route('/search').get(validateSchema(getProductsSchema), getProductList)
+router.route('/search').get(validateSchema(getProductsSchema), getProductByName)
 
 router.route('/:id').get(validateSchema(getProductSchema), getProductDetail)
 
